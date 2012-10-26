@@ -2,7 +2,7 @@
     "name": "ali/datatable",
     "description": "Symfony2 Ajax Datagrid Bundle for doctrine2 entities",
     "keywords": ["symfony2","jquery","datatable"],
-    "homepage": "https://github.com/AliHichem/AliDatatableBundle",
+    "homepage": "https://github.com/benjaminu/AliDatatableBundle",
     "license": "MIT",
     "type": "library",
     "authors": [
