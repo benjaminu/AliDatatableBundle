@@ -2,50 +2,59 @@
 
 namespace Ali\DatatableBundle\Util;
 
-use Symfony\Component\DependencyInjection\ContainerInterface,
-    Symfony\Component\HttpFoundation\Response;
-use Doctrine\ORM\Query,
-    Doctrine\ORM\Query\Expr\Join;
-use Ali\DatatableBundle\Util\Factory\Query\DoctrineBuilder,
-    Ali\DatatableBundle\Util\Formatter\Renderer,
-    Ali\DatatableBundle\Util\Factory\Prototype\PrototypeBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\Query\Expr\Join;
+use Ali\DatatableBundle\Util\Factory\Query\DoctrineBuilder;
+use Ali\DatatableBundle\Util\Formatter\Renderer;
+use Ali\DatatableBundle\Util\Factory\Prototype\PrototypeBuilder;
+use Ali\DatatableBundle\Util\Factory\Query\QueryInterface;
 
+/**
+ * Datatable class.
+ *
+ * @category  Util
+ * @package   AliDatatbleBundle
+ * @author    Benjamin Ugbene <benjamin.ugbene@googlemail.com>
+ * @copyright 2013 Ali Hichem and Benjamin Ugbene
+ */
 class Datatable
 {
-    /** @var \Symfony\Component\DependencyInjection\ContainerInterface */
+    /** @var ContainerInterface */
     protected $container;
 
     /** @var \Doctrine\ORM\EntityManager */
     protected $em;
 
-    /** @var \Symfony\Component\HttpFoundation\Request */
+    /** @var Request */
     protected $request;
 
-    /** @var \Ali\DatatableBundle\Util\Factory\Query\QueryInterface */
+    /** @var QueryInterface */
     protected $queryBuilder;
 
     /** @var boolean */
-    protected $has_action = true;
+    protected $hasAction = true;
 
     /** @var boolean */
-    protected $has_renderer_action = false;
+    protected $hasRendererAction = false;
 
     /** @var array */
-    protected $fixed_data = NULL;
+    protected $fixedData = null;
 
     /** @var closure */
-    protected $renderer = NULL;
+    protected $renderer = null;
 
     /** @var array */
-    protected $renderers = NULL;
+    protected $renderers = null;
 
     /** @var Renderer */
-    protected $renderer_obj = null;
+    protected $rendererObj = null;
 
     /** @var boolean */
-    protected $search = FALSE;
+    protected $search = false;
     protected static $instances = array();
-    protected static $current_instance = NULL;
+    protected static $currentInstance = null;
 
     /**
      * Individual column sort statuses.
@@ -82,52 +91,54 @@ class Datatable
      */
     public function __construct(ContainerInterface $container)
     {
-        $this->container = $container;
-        $this->em = $this->container->get('doctrine.orm.entity_manager');
-        $this->request = $this->container->get('request');
-        $this->queryBuilder = new DoctrineBuilder($container);
-        self::$current_instance = $this;
+        $this->container       = $container;
+        $this->em              = $this->container->get('doctrine.orm.entity_manager');
+        $this->request         = $this->container->get('request');
+        $this->queryBuilder    = new DoctrineBuilder($container);
+        self::$currentInstance = $this;
     }
 
     /**
-     * add join
+     * Add join
      *
-     * @example:
-     *      ->setJoin(
-     *              'r.event',
-     *              'e',
-     *              \Doctrine\ORM\Query\Expr\Join::INNER_JOIN,
-     *              'e.name like %test%')
-     *
-     * @param string $join_field
+     * @param string $joinField
      * @param string $alias
      * @param string $type
      * @param string $cond
      *
+     * @example:
+     *     ->setJoin(
+     *         'r.event',
+     *         'e',
+     *         Join::INNER_JOIN,
+     *         'e.name like %test%'
+     *     )
+     *
      * @return Datatable
      */
-    public function addJoin($join_field, $alias, $type = Join::INNER_JOIN, $cond = '')
+    public function addJoin($joinField, $alias, $type = Join::INNER_JOIN, $cond = '')
     {
-        $this->queryBuilder->addJoin($join_field, $alias, $type, $cond);
+        $this->queryBuilder->addJoin($joinField, $alias, $type, $cond);
+
         return $this;
     }
 
     /**
      * execute
      *
-     * @param int $hydration_mode
+     * @param int $hydrationMode
      *
      * @return Response
      */
-    public function execute($hydration_mode = Query::HYDRATE_ARRAY)
+    public function execute($hydrationMode = Query::HYDRATE_ARRAY)
     {
         $request       = $this->request;
         $iTotalRecords = $this->queryBuilder->getTotalRecords();
-        $data          = $this->queryBuilder->getData($hydration_mode);
+        $data          = $this->queryBuilder->getData($hydrationMode);
 
-        if (! is_null($this->fixed_data)) {
-            $this->fixed_data = array_reverse($this->fixed_data);
-            foreach ($this->fixed_data as $item) {
+        if (! is_null($this->fixedData)) {
+            $this->fixedData = array_reverse($this->fixedData);
+            foreach ($this->fixedData as $item) {
                 array_unshift($data, $item);
             }
         }
@@ -136,8 +147,8 @@ class Datatable
             array_walk($data, $this->renderer);
         }
 
-        if (! is_null($this->renderer_obj)) {
-            $this->renderer_obj->applyTo($data);
+        if (! is_null($this->rendererObj)) {
+            $this->rendererObj->applyTo($data);
         }
 
         $output = array(
@@ -160,12 +171,12 @@ class Datatable
      */
     public static function getInstance($id)
     {
-        $instance = NULL;
+        $instance = null;
 
         if (array_key_exists($id, self::$instances)) {
             $instance = self::$instances[$id];
         } else {
-            $instance = self::$current_instance;
+            $instance = self::$currentInstance;
         }
 
         if (is_null($instance)) {
@@ -207,13 +218,13 @@ class Datatable
     }
 
     /**
-     * get has_action
+     * get hasAction
      *
      * @return boolean
      */
     public function getHasAction()
     {
-        return $this->has_action;
+        return $this->hasAction;
     }
 
     /**
@@ -223,7 +234,7 @@ class Datatable
      */
     public function getHasRendererAction()
     {
-        return $this->has_renderer_action;
+        return $this->hasRendererAction;
     }
 
     /**
@@ -321,14 +332,15 @@ class Datatable
     /**
      * set entity
      *
-     * @param type $entity_name
-     * @param type $entity_alias
+     * @param type $entityName
+     * @param type $entityAlias
      *
      * @return Datatable
      */
-    public function setEntity($entity_name, $entity_alias)
+    public function setEntity($entityName, $entityAlias)
     {
-        $this->queryBuilder->setEntity($entity_name, $entity_alias);
+        $this->queryBuilder->setEntity($entityName, $entityAlias);
+
         return $this;
     }
 
@@ -342,33 +354,36 @@ class Datatable
     public function setFields(array $fields)
     {
         $this->queryBuilder->setFields($fields);
+
         return $this;
     }
 
     /**
      * set has action
      *
-     * @param type $has_action
+     * @param type $hasAction
      *
      * @return Datatable
      */
-    public function setHasAction($has_action)
+    public function setHasAction($hasAction)
     {
-        $this->has_action = $has_action;
+        $this->hasAction = $hasAction;
+
         return $this;
     }
 
     /**
      * set order
      *
-     * @param type $order_field
-     * @param type $order_type
+     * @param type $orderField
+     * @param type $orderType
      *
      * @return Datatable
      */
-    public function setOrder($order_field, $order_type)
+    public function setOrder($orderField, $orderType)
     {
-        $this->queryBuilder->setOrder($order_field, $order_type);
+        $this->queryBuilder->setOrder($orderField, $orderType);
+
         return $this;
     }
 
@@ -381,7 +396,8 @@ class Datatable
      */
     public function setFixedData($data)
     {
-        $this->fixed_data = $data;
+        $this->fixedData = $data;
+
         return $this;
     }
 
@@ -396,7 +412,9 @@ class Datatable
     }
 
     /**
-     * set a php closure as renderer
+     * Set a php closure as renderer
+     *
+     * @param \Closure $renderer
      *
      * @example:
      *
@@ -425,18 +443,19 @@ class Datatable
      *         )
      *       ->setHasAction(true);
      *
-     * @param \Closure $renderer
-     *
      * @return Datatable
      */
     public function setRenderer(\Closure $renderer)
     {
         $this->renderer = $renderer;
+
         return $this;
     }
 
     /**
-     * set renderers as twig views
+     * Set renderers as twig views
+     *
+     * @param array $renderers
      *
      * @example: To override the actions column
      *
@@ -461,20 +480,18 @@ class Datatable
      *          )
      *       )
      *
-     * @param array $renderers
-     *
      * @return Datatable
      */
     public function setRenderers(array $renderers)
     {
         $this->renderers = $renderers;
         if (! empty($this->renderers)) {
-            $this->renderer_obj = new Renderer($this->container, $this->renderers, $this->getFields());
+            $this->rendererObj = new Renderer($this->container, $this->renderers, $this->getFields());
         }
 
-        $actions_index = array_search('_identifier_', array_keys($this->getFields()));
-        if ($actions_index != FALSE && isset($renderers[$actions_index])) {
-            $this->has_renderer_action = true;
+        $actionsIndex = array_search('_identifier_', array_keys($this->getFields()));
+        if ($actionsIndex != false && isset($renderers[$actionsIndex])) {
+            $this->hasRendererAction = true;
         }
 
         return $this;
@@ -491,6 +508,7 @@ class Datatable
     public function setWhere($where, array $params = array())
     {
         $this->queryBuilder->setWhere($where, $params);
+
         return $this;
     }
 
