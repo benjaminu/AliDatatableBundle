@@ -28,15 +28,16 @@ class DoctrineBuilder implements QueryInterface
 
     /** @var \Doctrine\ORM\QueryBuilder */
     protected $queryBuilder;
+
     protected $entityName;
     protected $entityAlias;
     protected $fields;
     protected $orderField = null;
-    protected $orderType  = "asc";
-    protected $where       = null;
-    protected $joins       = array();
+    protected $orderType  = 'asc';
+    protected $where      = null;
+    protected $joins      = array();
     protected $has_action = true;
-    protected $fixedData = null;
+    protected $fixedData  = null;
     protected $renderer   = null;
     protected $search     = false;
 
@@ -272,7 +273,7 @@ class DoctrineBuilder implements QueryInterface
      */
     public function setEntity($entityName, $entityAlias)
     {
-        $this->entityName = $entityName;
+        $this->entityName  = $entityName;
         $this->entityAlias = $entityAlias;
         $this->queryBuilder->from($entityName, $entityAlias);
 
@@ -305,7 +306,7 @@ class DoctrineBuilder implements QueryInterface
     public function setOrder($orderField, $orderType)
     {
         $this->orderField = $orderField;
-        $this->orderType = $orderType;
+        $this->orderType  = $orderType;
         $this->queryBuilder->orderBy($orderField, $orderType);
 
         return $this;
